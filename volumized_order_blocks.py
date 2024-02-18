@@ -1,10 +1,8 @@
 import pandas as pd
 import numpy as np
-import matplotlib as mpl
 from binance.client import Client
 import logging
 import plotly.graph_objects as go
-
 
 # Set logging configuration
 logging.basicConfig(level=logging.INFO)
@@ -85,15 +83,17 @@ def find_ob_swings(df, length):
 def findOrderBlocks(df, maxDistanceToLastBar, swingLength, obEndMethod, maxOrderBlocks):
     bullishOrderBlocksList = []
     bearishOrderBlocksList = []
-    bar_index = len(df) - 1
-    last_bar_index = max(0, bar_index - maxDistanceToLastBar)
 
-    if bar_index > last_bar_index - maxDistanceToLastBar:
-        top, btm = find_ob_swings(df, swingLength)
+    last_bar_index = len(df)
+    bar_index = max(0, last_bar_index - maxDistanceToLastBar)
+    top, btm = find_ob_swings(df, swingLength)
+
+    if bar_index >= 0:
+
         useBody = False
 
         # Bullish Order Block
-        for close_index in range(len(df)):
+        for close_index in range(bar_index, last_bar_index):
             close_price = df["close"].iloc[close_index]
 
             bullishBreaked = 0
@@ -167,7 +167,7 @@ def findOrderBlocks(df, maxDistanceToLastBar, swingLength, obEndMethod, maxOrder
                         bullishOrderBlocksList.pop()
                         break
 
-        for close_index in range(len(df)):
+        for close_index in range(bar_index, last_bar_index):
             close_price = df["close"].iloc[close_index]
 
             # Bearish Order Block
@@ -249,7 +249,7 @@ def findOrderBlocks(df, maxDistanceToLastBar, swingLength, obEndMethod, maxOrder
 
 
 # Fetch historical data from Binance
-symbol = "ETHUSDT"
+symbol = "BTTCUSDT"
 interval = "1d"
 df = import_data(symbol, interval, "2021-12-01")
 swing_length = 10
@@ -268,7 +268,9 @@ print(pd.DataFrame(bearish_order_blocks))
 
 
 def format_volume(volume):
-    if volume >= 1e9:
+    if volume >= 1e12:
+        return f"{volume / 1e12:.3f}T"
+    elif volume >= 1e9:
         return f"{volume / 1e9:.3f}B"
     elif volume >= 1e6:
         return f"{volume / 1e6:.3f}M"
@@ -392,7 +394,7 @@ for ob in bearish_order_blocks:
         )
         * 100.0
     )
-    
+
     volume_text = format_volume(ob["volume"])
 
     # Add annotation text
@@ -414,6 +416,7 @@ fig.update_layout(
     title=f"Volumized Order Blocks {symbol} interval: {interval}",
     xaxis=dict(
         title="Time",
+        automargin=True,
         rangeslider_visible=False,
         showspikes=True,
         spikesnap="cursor",
@@ -425,15 +428,25 @@ fig.update_layout(
         title="Price",
         side="right",
         type="log",
+        automargin=True,
         showspikes=True,
         spikesnap="cursor",
         spikedash="dash",
         spikemode="toaxis+across",
         spikethickness=-3,
+        tickformatstops=[
+            dict(dtickrange=[None, 0.0001], value=".6f"),
+            dict(dtickrange=[0.0001, 0.001], value=".5f"),
+            dict(dtickrange=[0.001, 0.01], value=".4f"),
+            dict(dtickrange=[0.01, 0.1], value=".3f"),
+            dict(dtickrange=[0.1, 1], value=".2f"),
+            dict(dtickrange=[1, None], value=".2f"),
+        ],
     ),
     template="plotly_dark",
     hovermode="x",
     showlegend=True,
+    autosize=True,
 )
 
 fig.show()
