@@ -28,7 +28,7 @@ def import_data(symbol, interval, start_date):
     return df
 
 
-def find_ob_swings2(df, length):
+def find_ob_swings(df, length):
     ob_swings = {"top": [], "bottom": []}
     swing_type = 0
 
@@ -89,7 +89,7 @@ def findOrderBlocks(df, maxDistanceToLastBar, swingLength, obEndMethod, maxOrder
     last_bar_index = max(0, bar_index - maxDistanceToLastBar)
 
     if bar_index > last_bar_index - maxDistanceToLastBar:
-        top, btm = find_ob_swings2(df, swingLength)
+        top, btm = find_ob_swings(df, swingLength)
         useBody = False
 
         # Bullish Order Block
@@ -392,6 +392,8 @@ for ob in bearish_order_blocks:
         )
         * 100.0
     )
+    
+    volume_text = format_volume(ob["volume"])
 
     # Add annotation text
     annotation_text = f"{volume_text} ({percentage}%)"
