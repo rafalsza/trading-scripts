@@ -13,9 +13,7 @@ pd.set_option("display.max_rows", 1000)
 def import_data(symbol, interval, start_date):
     client = Client()
     df = pd.DataFrame(
-        client.get_historical_klines(
-            symbol, start_str=start_date, interval=interval, limit=5000
-        )
+        client.get_historical_klines(symbol, start_str=start_date, interval=interval)
     ).astype(float)
 
     df = df.iloc[:, :6]
@@ -249,9 +247,10 @@ def findOrderBlocks(df, maxDistanceToLastBar, swingLength, obEndMethod, maxOrder
 
 
 # Fetch historical data from Binance
-symbol = "BTTCUSDT"
-interval = "1d"
-df = import_data(symbol, interval, "2021-12-01")
+symbol = "BTCUSDT"
+interval = "15m"
+df = import_data(symbol, interval, "2023-12-01")
+print(df)
 swing_length = 10
 maxDistanceToLastBar = 1750
 
