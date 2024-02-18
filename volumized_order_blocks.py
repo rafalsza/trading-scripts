@@ -154,9 +154,7 @@ def findOrderBlocks(df, maxDistanceToLastBar, swingLength, obEndMethod, maxOrder
                         "type": "Bull",
                         "loc": boxLoc,
                         "loc_number": close_index,
-                        "index": len(
-                            bullishOrderBlocksList
-                        ),
+                        "index": len(bullishOrderBlocksList),
                         "oblowvolume": df["volume"].iloc[close_index - 2],
                         "obhighvolume": (
                             df["volume"].iloc[close_index]
@@ -251,7 +249,7 @@ def findOrderBlocks(df, maxDistanceToLastBar, swingLength, obEndMethod, maxOrder
 
 
 # Fetch historical data from Binance
-symbol = "BTCUSDT"
+symbol = "ETHUSDT"
 interval = "1d"
 df = import_data(symbol, interval, "2021-12-01")
 swing_length = 10
@@ -267,6 +265,7 @@ print(pd.DataFrame(bullish_order_blocks))
 
 print("Bearish Order Blocks:")
 print(pd.DataFrame(bearish_order_blocks))
+
 
 def format_volume(volume):
     if volume >= 1e9:
@@ -288,12 +287,8 @@ fig = go.Figure(
             high=df["high"],
             low=df["low"],
             close=df["close"],
-            increasing=dict(
-                    line=dict(width=1.5, color="#26a69a"), fillcolor="#26a69a"
-                ),
-                decreasing=dict(
-                    line=dict(width=1.5, color="#ef5350"), fillcolor="#ef5350"
-                ),
+            increasing=dict(line=dict(width=1.5, color="#26a69a"), fillcolor="#26a69a"),
+            decreasing=dict(line=dict(width=1.5, color="#ef5350"), fillcolor="#ef5350"),
             showlegend=False,
         )
     ]
@@ -334,9 +329,9 @@ for ob in bullish_order_blocks:
         opacity=0.3,
         name="Bullish OB",
         legendgroup="bullish ob",
-        showlegend=True
+        showlegend=True,
     )
-    
+
     if "breakTime" in ob:
         x_center = ob["loc"] + (ob["breakTime"] - ob["loc"]) / 2
     else:
@@ -345,15 +340,25 @@ for ob in bullish_order_blocks:
     # Convert y-value to log scale
     y_center = np.log10((ob["bottom"] + ob["top"]) / 2)
     volume_text = format_volume(ob["volume"])
-    
+    percentage = int(
+        (
+            min(ob["obhighvolume"], ob["oblowvolume"])
+            / max(ob["obhighvolume"], ob["oblowvolume"])
+        )
+        * 100.0
+    )
+
+    # Add annotation text
+    annotation_text = f"{volume_text} ({percentage}%)"
+
     fig.add_annotation(
         x=x_center,
-        y = y_center,
+        y=y_center,
         xref="x",
         yref="y",
         align="center",
-        text=volume_text,
-        font=dict(color="white",size=13),
+        text=annotation_text,
+        font=dict(color="white", size=13),
         showarrow=False,
     )
 
@@ -370,9 +375,9 @@ for ob in bearish_order_blocks:
         opacity=0.3,
         name="Bearish OB",
         legendgroup="bearish ob",
-        showlegend=True
+        showlegend=True,
     )
-    
+
     if "breakTime" in ob:
         x_center = ob["loc"] + (ob["breakTime"] - ob["loc"]) / 2
     else:
@@ -380,16 +385,25 @@ for ob in bearish_order_blocks:
 
     # Convert y-value to log scale
     y_center = np.log10((ob["bottom"] + ob["top"]) / 2)
-    volume_text = format_volume(ob["volume"])
-    
+    percentage = int(
+        (
+            min(ob["obhighvolume"], ob["oblowvolume"])
+            / max(ob["obhighvolume"], ob["oblowvolume"])
+        )
+        * 100.0
+    )
+
+    # Add annotation text
+    annotation_text = f"{volume_text} ({percentage}%)"
+
     fig.add_annotation(
         x=x_center,
-        y = y_center,
+        y=y_center,
         xref="x",
         yref="y",
         align="center",
-        text=volume_text,
-        font=dict(color="white",size=13),
+        text=annotation_text,
+        font=dict(color="white", size=13),
         showarrow=False,
     )
 
