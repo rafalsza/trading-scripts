@@ -101,11 +101,13 @@ def findOrderBlocks(df, maxDistanceToLastBar, swingLength, obEndMethod, maxOrder
                     if not currentOB["breaker"]:
                         if (
                             obEndMethod == "Wick"
-                            and df.low.iloc[close_index - 1] < currentOB["bottom"]
+                            and df.low.iloc[close_index] < currentOB["bottom"]
                         ) or (
                             obEndMethod != "Wick"
-                            and df.low.iloc[close_index - 1]
-                            < currentOB[["open", "close"]].min()
+                            and min(
+                                df.open.iloc[close_index], df.close.iloc[close_index]
+                            )
+                            < currentOB["bottom"]
                         ):
                             currentOB["breaker"] = True
                             currentOB["breakTime"] = df.index[close_index - 1]
@@ -178,8 +180,10 @@ def findOrderBlocks(df, maxDistanceToLastBar, swingLength, obEndMethod, maxOrder
                             and df.high.iloc[close_index] > currentOB["top"]
                         ) or (
                             obEndMethod != "Wick"
-                            and df.high.iloc[close_index - 1]
-                            > currentOB[["open", "close"]].max()
+                            and max(
+                                df.open.iloc[close_index], df.close.iloc[close_index]
+                            )
+                            > currentOB["top"]
                         ):
                             currentOB["breaker"] = True
                             currentOB["breakTime"] = df.index[close_index]
@@ -247,15 +251,15 @@ def findOrderBlocks(df, maxDistanceToLastBar, swingLength, obEndMethod, maxOrder
 # Fetch historical data from Binance
 symbol = "BTCUSDT"
 interval = "1d"
-df = import_data(symbol, interval, "2022-01-01")
+df = import_data(symbol, interval, "2021-01-01")
 swing_length = 10
 maxOrderBlocks = 30
 maxDistanceToLastBar = 1750
-
+obEndMethod = "Wick"
 
 # Detect bullish and bearish order blocks
 bullish_order_blocks, bearish_order_blocks, top, btm = findOrderBlocks(
-    df, maxDistanceToLastBar, swing_length, "Wick", maxOrderBlocks
+    df, maxDistanceToLastBar, swing_length, obEndMethod, maxOrderBlocks
 )
 print("Bullish Order Blocks:")
 print(pd.DataFrame(bullish_order_blocks))
