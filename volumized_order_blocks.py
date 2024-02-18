@@ -163,7 +163,6 @@ def findOrderBlocks(df, maxDistanceToLastBar, swingLength, obEndMethod, maxOrder
                     bullishOrderBlocksList.insert(0, newOrderBlockInfo)
                     if len(bullishOrderBlocksList) > maxOrderBlocks:
                         bullishOrderBlocksList.pop()
-                        break
 
         for close_index in range(bar_index, last_bar_index):
             close_price = df["close"].iloc[close_index]
@@ -241,23 +240,22 @@ def findOrderBlocks(df, maxDistanceToLastBar, swingLength, obEndMethod, maxOrder
                     bearishOrderBlocksList.insert(0, newOrderBlockInfo)
                     if len(bearishOrderBlocksList) > maxOrderBlocks:
                         bearishOrderBlocksList.pop()
-                        break
 
     return bullishOrderBlocksList, bearishOrderBlocksList, top, btm
 
 
 # Fetch historical data from Binance
 symbol = "BTCUSDT"
-interval = "15m"
-df = import_data(symbol, interval, "2023-12-01")
-print(df)
+interval = "1d"
+df = import_data(symbol, interval, "2022-01-01")
 swing_length = 10
+maxOrderBlocks = 30
 maxDistanceToLastBar = 1750
 
 
 # Detect bullish and bearish order blocks
 bullish_order_blocks, bearish_order_blocks, top, btm = findOrderBlocks(
-    df, maxDistanceToLastBar, swing_length, "Wick", 30
+    df, maxDistanceToLastBar, swing_length, "Wick", maxOrderBlocks
 )
 print("Bullish Order Blocks:")
 print(pd.DataFrame(bullish_order_blocks))
